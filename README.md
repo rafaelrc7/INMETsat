@@ -11,8 +11,8 @@ Installation is pretty simple, just move the script to a folder inside your PATH
 
 # Requirements
 The script only has two requirements:
-  -MPV  (Used to reproduce the gif on a loop)
-  -imagemagick  (Used to make the downloaded images into a GIF)
+  - MPV  (Used to reproduce the gif on a loop)
+  - imagemagick  (Used to make the downloaded images into a GIF)
   
 # Thanks for your time
 I would also like to add that this is my first public script, and I'm not that experienced, if you have any critics/suggestions feel free to contact me.
