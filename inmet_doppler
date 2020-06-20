@@ -1,0 +1,53 @@
+#!/bin/sh
+
+cd /tmp
+
+region="br"
+# se = sudeste
+# br = brasil
+# co = centro-oeste
+# n	 = norte
+# ne = nordeste
+# s  = sul
+
+regionFull="BRASIL"
+# SUDESTE 		= sudeste
+# BRASIL 		= brasil
+# CENTRO_OESTE 	= centro-oeste
+# NORTE	 		= norte
+# NORDESTE 		= nordeste
+# SUL  			= sul
+
+gifImageSize=30 # dentro do intervalo: [10,30]
+
+infoType="TN"
+# TN	= Topo das Nuvens
+# VI	= Visivel
+# IV 	= Infra-Vermelho termal
+# VA	= Vapor d'agua
+# VPR	= Vapor d'agua realcado
+
+
+URL="http://www.inmet.gov.br/satelites/?produto=GO_${region}_${infoType}&hr=$gifImageSize"
+imURL="http://www.inmet.gov.br/projetos/cga/capre/sepra/GEO/GOES12/REGIOES/${regionFull}/"
+dopplerFileList="./dopplerFileList"
+
+echo "Baixando e processando imagens de inmet.gov.br, por favor espere!"
+
+curl -s $URL | grep "Mapa </option>$" | grep -oh "${region}_${infoType}[0-9]*.jpg" > $dopplerFileList
+
+while IFS= read -r line
+do
+	wget -q "${imURL}${line}"
+done < "$dopplerFileList"
+
+echo "Transformando imagens em um GIF..."
+
+convert -delay 15 -loop 0 ${region}_${infoType}*.jpg doppler.gif
+
+rm ./${region}_${infoType}*.jpg
+rm $dopplerFileList
+
+mpv --really-quiet --no-osc --loop-file=inf ./doppler.gif
+
+rm ./doppler.gif
