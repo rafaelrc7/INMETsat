@@ -18,8 +18,6 @@ regionFull="BRASIL"
 # NORDESTE 		= nordeste
 # SUL  			= sul
 
-gifImageSize=30 # dentro do intervalo: [10,30]
-
 infoType="TN"
 # TN	= Topo das Nuvens
 # VI	= Visivel
@@ -27,27 +25,28 @@ infoType="TN"
 # VA	= Vapor d'agua
 # VPR	= Vapor d'agua realcado
 
+gifImageSize=30 # dentro do intervalo: [10,30]
 
 URL="http://www.inmet.gov.br/satelites/?produto=GO_${region}_${infoType}&hr=$gifImageSize"
 imURL="http://www.inmet.gov.br/projetos/cga/capre/sepra/GEO/GOES12/REGIOES/${regionFull}/"
 dopplerFileList="./dopplerFileList"
 
-echo "Baixando e processando imagens de inmet.gov.br, por favor espere!"
+notify-send "🌦 Baixando imagens de inmet.gov.br, por favor espere!"
 
-curl -s $URL | grep "Mapa </option>$" | grep -oh "${region}_${infoType}[0-9]*.jpg" > $dopplerFileList
+curl $URL | grep "Mapa </option>$" | grep -oh "${region}_${infoType}[0-9]*.jpg" > $dopplerFileList  || { notify-send "⛈ Falha ao acessar inmet.gov.br! Tente novamente."; exit; } 
 
-while IFS= read -r line
+while IFS= read -r line 
 do
-	wget -q "${imURL}${line}"
+	wget "${imURL}${line}" || { notify-send "⛈ Falha ao baixar imagens! Tente novamente."; exit; } 
 done < "$dopplerFileList"
 
-echo "Transformando imagens em um GIF..."
+notify-send "🌤 Download sucedido! Transformando imagens em um GIF..."
 
-convert -delay 15 -loop 0 ${region}_${infoType}*.jpg doppler.gif
+convert -delay 30 -loop 0 ${region}_${infoType}*.jpg doppler.gif && notify-send "️☀ Abrindo GIF!" || { notify-send "⛈ Falha na criação do GIF! Tente novamente."; exit; }
 
 rm ./${region}_${infoType}*.jpg
 rm $dopplerFileList
 
-mpv --really-quiet --no-osc --loop-file=inf ./doppler.gif
+mpv --no-osc --loop-file=inf ./doppler.gif
 
 rm ./doppler.gif
