@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/rafaelrc7/inmet-doppler/inmet"
+	"github.com/rafaelrc7/inmetsat/inmet"
 )
 
 func main() {
