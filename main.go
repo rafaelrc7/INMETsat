@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"image/gif"
 	"log"
 	"os"
@@ -10,9 +11,30 @@ import (
 	"github.com/rafaelrc7/inmetsat/inmet"
 )
 
+const (
+	version = "1.0.0"
+	name    = "INMETsat"
+	mail    = "contact@rafaelrc.com"
+)
+
+const usage = `Usage: %s [OPTION...]
+	Simple client for the INMET satellite API.
+
+	-v, --version               Shows current app version
+	-o, --output FILE           Set output gif name, by default "out.gif".
+	-s, --satellite MODE        Select satellite mode: GOES, GOESIM or SATELLITE.
+	-a, --area AREA             Region code, depends on satellite mode.
+	-p, --param PARAM           Query parameter, depends both on satellite and area.
+	-d, --delay DELAY           Set gif frame delay, in 100ths of a second.
+	-t, --threads THREADS       Set number of threads used for image processing.
+
+	Report bugs to <%s>
+`
+
 func main() {
 	var err error
 	var outName, satelliteIn, areaIn, paramIn string
+	var showVersion bool
 	var delay, threads int
 	var satellite inmet.Satellite
 	var area inmet.Area
@@ -30,7 +52,21 @@ func main() {
 	flag.IntVar(&delay, "d", 5, "GIF frame delay")
 	flag.IntVar(&threads, "threads", 8, "Number of threads used for image processing")
 	flag.IntVar(&threads, "t", 8, "Number of threads used for image processing")
+	flag.BoolVar(&showVersion, "version", false, "Show app version")
+	flag.BoolVar(&showVersion, "v", false, "Show app version")
+	flag.Usage = func() {
+		if len(os.Args) > 0 {
+			fmt.Printf(usage, os.Args[0], mail)
+		} else {
+			fmt.Printf(usage, "inmetsat", mail)
+		}
+	}
 	flag.Parse()
+
+	if showVersion {
+		fmt.Printf("%s %s\n", name, version)
+		os.Exit(0)
+	}
 
 	if satellite, err = inmet.GetSatelliteCode(satelliteIn); err != nil {
 		log.Fatal(err)
