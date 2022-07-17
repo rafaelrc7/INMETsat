@@ -17,9 +17,16 @@ const (
 	mail    = "contact@rafaelrc.com"
 )
 
-const usage = `Usage: %s [OPTION...]
+const usage = `Usage: %s [OPTION...] [MODE]
 	Simple client for the INMET satellite API.
 
+	Modes:
+	animation					Default. Generates animation based on settings.
+	areas						Print available areas.
+	params						Print available params.
+	hours						Print available areas.
+
+	Options:
 	-v, --version               Shows current app version
 	-o, --output FILE           Set output gif name, by default "out.gif".
 	-s, --satellite MODE        Select satellite mode: GOES, GOESIM or SATELLITE.
@@ -30,6 +37,13 @@ const usage = `Usage: %s [OPTION...]
 
 	Report bugs to <%s>
 `
+
+const (
+	animation = iota
+	areas
+	params
+	hours
+)
 
 func main() {
 	var err error
@@ -87,16 +101,46 @@ func main() {
 		log.Fatal(err)
 	}
 
-	anim, err := inmet.GetAnimation(satellite, area, param, time.Now(), delay, true, threads)
-	if err != nil {
-		log.Fatal(err)
+	args := flag.NArg()
+	mode := animation
+	if args > 0 {
+		off := len(os.Args) - args
+		switch os.Args[off] {
+		case "animation":
+			mode = animation
+		case "areas":
+			mode = areas
+		case "params":
+			mode = params
+		case "hours":
+			mode = hours
+		default:
+			log.Fatalf("Unexpected mode '%s'\n", os.Args[off])
+		}
 	}
 
-	f, err := os.Create(outName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
+	switch mode {
+	case animation:
+		anim, err := inmet.GetAnimation(satellite, area, param, time.Now(), delay, true, threads)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	gif.EncodeAll(f, &anim)
+		f, err := os.Create(outName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+
+		gif.EncodeAll(f, &anim)
+
+	case areas:
+		inmet.PrintAreas(satellite)
+
+	case params:
+		inmet.PrintParams(satellite, area)
+
+	case hours:
+		inmet.PrintHours(satellite, hours, param, time.Now())
+	}
 }

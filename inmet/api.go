@@ -116,6 +116,7 @@ func GetImages(sat Satellite, area Area, param Param, dateTime time.Time) (image
 		}
 
 		switch mime {
+		case "data:image/jpeg":
 		case "data:image/jpg":
 			img, err := jpeg.Decode(bytes.NewReader(imgSrc))
 			if err != nil {
