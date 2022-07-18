@@ -6,34 +6,31 @@ import (
 )
 
 func PrintAreas(sat Satellite) (err error) {
-	areas, err := GetAreas(sat)
+	sattext, err := sat.GetSatelliteStr()
 	if err != nil {
 		return
 	}
 
-	sattext, err := sat.GetSatelliteStr()
+	url, err := getAReqUrl(sat)
+	if err != nil {
+		return
+	}
+
+	var areas InfoResp
+	err = getInfo(url, &areas)
 	if err != nil {
 		return
 	}
 
 	fmt.Printf("Possible areas for '%s':\n", sattext)
 	for _, area := range areas {
-		areatext, err := area.GetAreaStr()
-		if err != nil {
-			return err
-		}
-		fmt.Printf("\t%s\n", areatext)
+		fmt.Printf("\t%s\t%s\n", area.Sigla, area.Nome)
 	}
 
 	return
 }
 
 func PrintParams(sat Satellite, are Area) (err error) {
-	params, err := GetParams(sat, are)
-	if err != nil {
-		return
-	}
-
 	sattext, err := sat.GetSatelliteStr()
 	if err != nil {
 		return
@@ -44,13 +41,20 @@ func PrintParams(sat Satellite, are Area) (err error) {
 		return
 	}
 
+	url, err := getPReqUrl(sat, are)
+	if err != nil {
+		return
+	}
+
+	var params InfoResp
+	err = getInfo(url, &params)
+	if err != nil {
+		return
+	}
+
 	fmt.Printf("Possible Params for satellite '%s' in '%s':\n", sattext, aretext)
 	for _, param := range params {
-		paramtext, err := param.GetParamStr()
-		if err != nil {
-			return err
-		}
-		fmt.Printf("\t%s\n", paramtext)
+		fmt.Printf("\t%s\t%s\n", param.Sigla, param.Nome)
 	}
 
 	return
